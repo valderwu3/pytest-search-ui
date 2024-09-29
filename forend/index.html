@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级测试用例搜索</title>
+    <link rel="stylesheet" href="./node_modules/element-plus/dist/index.css">
+    <script src="./node_modules/vue/dist/vue.global.js"></script>
+    <script src="./node_modules/element-plus/dist/index.full.js"></script>
+    <script src="./node_modules/axios/dist/axios.min.js"></script>
+    <script src="./node_modules/lodash/lodash.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', 'Helvetica', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #4a0e4e, #81379b, #c86f8d);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 100px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-button {
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .search-icon {
+            color: #4a0e4e;
+            font-size: 20px;
+        }
+
+        .feature-icons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+
+        .feature-icon {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            width: 80px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-icon i {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .el-table {
+            background: rgba(255, 255, 255, 0.5) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .el-table th,
+        .el-table td {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 192, 203, 0.5) !important;
+        }
+
+        .el-table--enable-row-hover .el-table__body tr:hover>td.el-table__cell {
+            background-color: rgba(255, 192, 203, 0.3) !important;
+        }
+
+        .el-table {
+            color: #fff !important;
+        }
+
+        .el-table th {
+            background-color: rgba(255, 192, 203, 0.5) !important;
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+        .el-table__empty-block {
+            background: transparent !important;
+        }
+
+        .el-table__empty-text {
+            color: #fff;
+        }
+
+        /* 覆盖 Element Plus 的默认样式 */
+        .el-table,
+        .el-table__expanded-cell {
+            background-color: transparent !important;
+        }
+
+        .el-table tr {
+            background-color: transparent !important;
+        }
+
+        .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+            background-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .project-name {
+            cursor: pointer;
+        }
+
+        /* 修改悬浮框样式 */
+        .el-popper {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+            color: #fff !important;
+        }
+
+        .el-popper__arrow::before {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+            border-color: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        .view-code-icon {
+            cursor: pointer;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+        }
+
+        .apply-icon {
+            cursor: pointer;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 新增模态框样式 */
+        .el-dialog {
+            background: linear-gradient(135deg, #4a0e4e, #81379b, #c86f8d) !important;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .el-dialog__title {
+            color: #fff !important;
+        }
+
+        .el-dialog__body {
+            color: #fff !important;
+        }
+
+        .el-dialog__header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .el-dialog__footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .el-input__inner {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border: none !important;
+            color: #fff !important;
+        }
+
+        .el-input__inner::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .el-button {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border: none !important;
+            color: #fff !important;
+        }
+
+        .el-button:hover {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .el-button:disabled {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* 修改模态框中输入框的样式 */
+        .el-dialog .el-input__inner {
+            color: #000 !important;
+            background-color: #fff !important;
+        }
+
+        /* 修改placeholder字体颜色为灰色 */
+        .el-dialog .el-input__inner::placeholder {
+            color: #999 !important;
+        }
+
+        /* 添加代码悬浮框样式 */
+        .el-popover {
+            background-color: #1e1e1e !important;
+            color: #d4d4d4 !important;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="header">
+            <div class="logo">🔍 TestSearch</div>
+            <div class="user-info">
+                <!-- <img src="/api/placeholder/40/40" alt="User Avatar" class="user-avatar">
+                <span>用户名</span> -->
+            </div>
+        </div>
+        <div class="search-container">
+            <input v-model="searchQuery" @input="debouncedSearch" placeholder="eg : ali reboot" class="search-input">
+            <!-- <button class="search-button" @click="performSearch">
+                <i class="el-icon-search search-icon"></i>
+            </button> -->
+        </div>
+        <!-- <div class="feature-icons">
+            <div class="feature-icon">
+                <i class="el-icon-picture-outline"></i>
+                <div>Moomaow</div>
+            </div>
+            <div class="feature-icon">
+                <i class="el-icon-box"></i>
+                <div>Umetre</div>
+            </div>
+            <div class="feature-icon">
+                <i class="el-icon-location"></i>
+                <div>Oonae</div>
+            </div>
+            <div class="feature-icon">
+                <i class="el-icon-setting"></i>
+                <div>Neching</div>
+            </div>
+            <div class="feature-icon">
+                <i class="el-icon-bell"></i>
+                <div>Neraocm</div>
+            </div>
+            <div class="feature-icon">
+                <i class="el-icon-camera"></i>
+                <div>Marnect</div>
+            </div>
+            <div class="feature-icon">
+                <i class="el-icon-message"></i>
+                <div>Toldnoarm</div>
+            </div>
+        </div> -->
+        <el-table :data="searchResults" style="width: 100%;" v-if="searchResults.length > 0">
+            <el-table-column prop="project_name" label="项目名称">
+                <template #default="scope">
+                    <el-tooltip :content="scope.row.project_description" placement="top" effect="dark">
+                        <span class="project-name">{{ scope.row.project_name }}</span>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column prop="case_name" label="用例名称"></el-table-column>
+            <el-table-column prop="case_description" label="用例描述">
+                <template #default="scope">
+                    <el-popover
+                        placement="right"
+                        :width="400"
+                        trigger="hover"
+                        :content="scope.row.case_code"
+                    >
+                        <template #reference>
+                            <span>{{ scope.row.case_description || '暂无描述，可查看代码' }}</span>
+                        </template>
+                    </el-popover>
+                </template>
+            </el-table-column>
+            <el-table-column label="打开项目">
+                <template #default="scope">
+                    <el-tooltip :content="scope.row.file_path" placement="top" effect="dark">
+                        <svg @click="viewCode(scope.row.file_path)" class="view-code-icon" viewBox="0 0 24 24"
+                            width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15H7v9.07L8.5 18h6v4.5zm6-6h-12v-15H16V6h4.5v10.5z"
+                                fill="#ffffff" />
+                            <path d="M6.06 10.13l1.06-1.06L11.84 13l-4.72 3.94-1.06-1.06L9.38 13 6.06 10.13z"
+                                fill="#ffffff" />
+                        </svg>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column label="我要使用">
+                <template #default="scope">
+                    <svg @click="openApplyDialog(scope.row.project_name, scope.row.case_name)" class="apply-icon" viewBox="0 0 24 24"
+                        width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffffff"/>
+                    </svg>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-empty v-else description="暂无搜索结果" :image-size="200"></el-empty>
+
+        <el-dialog v-model="dialogVisible" title="使用申请" width="30%" :before-close="handleClose">
+            <span  style="display: flex; align-items: center; margin: 15px;">申请使用：{{ selectedProject }}</span>
+            <span  style="display: flex; align-items: center; margin: 15px;">用例名称：{{ selectedCase }}</span>
+            <div style="display: flex; align-items: center; margin: 15px;">
+                <span>用于项目：</span>
+                <el-input v-model="applyProject" placeholder="格式：客户-平台-光层/电层" style="margin-left: 5px; flex: 1;" required></el-input>
+            </div>
+            <div style="display: flex; align-items: center; margin: 15px;">
+                <span>项目背景：</span>
+                <el-input v-model="projectBackground" placeholder="如：xx客户稳定性测试" style="margin-left: 5px; flex: 1;" required></el-input>
+            </div>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="copyApplyText" :disabled="!applyProject || !projectBackground">点击复制</el-button>
+                    <p style="margin-top: 15px; font-size: 12px;">将复制内容发送给邬三毛</p>
+                </span>
+            </template>
+        </el-dialog>
+        <el-message v-model="messageVisible" :type="messageType" :message="messageContent"></el-message>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+        const app = createApp({
+            setup() {
+                const searchQuery = ref('');
+                const searchResults = ref([]);
+                const dialogVisible = ref(false);
+                const selectedProject = ref('');
+                const selectedCase = ref('');
+                const applyProject = ref('');
+                const projectBackground = ref('');
+
+                const performSearch = async () => {
+                    try {
+                        const response = await axios.post('http://localhost:8001/search', {
+                            query: searchQuery.value
+                        });
+                        searchResults.value = response.data.hits;
+                    } catch (error) {
+                        console.error('搜索出错:', error);
+                        ElementPlus.ElMessage.error('搜索失败，请稍后重试');
+                    }
+                };
+
+                const debouncedSearch = _.debounce(performSearch, 300);
+
+                const viewCode = (filePath) => {
+                    window.open(`http://10.3.129.217:8001/home/sanmaow/CodeBase/${filePath}`, '_blank');
+                };
+
+                const openApplyDialog = (projectName, caseName) => {
+                    selectedProject.value = projectName;
+                    selectedCase.value = caseName;
+                    dialogVisible.value = true;
+                };
+
+                const handleClose = (done) => {
+                    done();
+                };
+
+                const copyApplyText = () => {
+                    const text = `申请使用：${selectedProject.value}\n用例名称：${selectedCase.value}\n用于项目：${applyProject.value}\n项目背景：${projectBackground.value}`;
+                    navigator.clipboard.writeText(text).then(() => {
+                        ElementPlus.ElMessage.success('复制成功');
+                        dialogVisible.value = false;
+                    }, () => {
+                        ElementPlus.ElMessage.error('复制失败');
+                    });
+                };
+
+                return {
+                    searchQuery,
+                    searchResults,
+                    debouncedSearch,
+                    performSearch,
+                    viewCode,
+                    dialogVisible,
+                    selectedProject,
+                    selectedCase,
+                    applyProject,
+                    projectBackground,
+                    openApplyDialog,
+                    handleClose,
+                    copyApplyText
+                };
+            }
+        });
+
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

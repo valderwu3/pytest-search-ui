@@ -419,12 +419,28 @@
 
                 const copyApplyText = () => {
                     const text = `申请使用：${selectedProject.value}\n用例名称：${selectedCase.value}\n用于项目：${applyProject.value}\n项目背景：${projectBackground.value}`;
-                    navigator.clipboard.writeText(text).then(() => {
-                        ElementPlus.ElMessage.success('复制成功');
-                        dialogVisible.value = false;
-                    }, () => {
-                        ElementPlus.ElMessage.error('复制失败');
-                    });
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            ElementPlus.ElMessage.success('复制成功');
+                            dialogVisible.value = false;
+                        }).catch(() => {
+                            ElementPlus.ElMessage.error('复制失败');
+                        });
+                    } else {
+                        // 如果navigator.clipboard不可用，使用备用方法
+                        const textArea = document.createElement('textarea');
+                        textArea.value = text;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            ElementPlus.ElMessage.success('复制成功');
+                            dialogVisible.value = false;
+                        } catch (err) {
+                            ElementPlus.ElMessage.error('复制失败');
+                        }
+                        document.body.removeChild(textArea);
+                    }
                 };
 
                 return {

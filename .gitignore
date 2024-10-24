@@ -1,0 +1,5 @@
+test_cases.db
+*.log
+/.idea
+/.vscode
+nohup.out

@@ -254,9 +254,16 @@
             background-color: #1e1e1e !important;
             color: #d4d4d4 !important;
             font-family: 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
+            white-space: nowrap;
             max-height: 400px;
             overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        /* 添加代码悬浮框内容样式 */
+        .code-content {
+            width: 600px;
+            overflow-x: auto;
         }
     </style>
 </head>
@@ -320,10 +327,14 @@
                 <template #default="scope">
                     <el-popover
                         placement="right"
-                        :width="400"
+                        :width="600"
                         trigger="hover"
-                        :content="scope.row.case_code"
                     >
+                        <template #default>
+                            <div class="code-content">
+                                <pre>{{ scope.row.case_code }}</pre>
+                            </div>
+                        </template>
                         <template #reference>
                             <span>{{ scope.row.case_description ? scope.row.case_description : '暂无描述，可查看代码' }}</span>
                         </template>
@@ -404,7 +415,7 @@
                 const debouncedSearch = _.debounce(performSearch, 300);
 
                 const viewCode = (filePath) => {
-                    window.open(`http://10.3.129.217:8001/home/sanmaow/CodeBase/${filePath}`, '_blank');
+                    window.open(`http://10.3.129.217:8801/?folder=/home/sanmaow/CodeBase/${filePath}`, '_blank');
                 };
 
                 const openApplyDialog = (projectName, caseName) => {

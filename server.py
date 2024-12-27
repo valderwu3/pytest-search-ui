@@ -42,8 +42,24 @@ async def read_root(request: Request):
 
 @app.post("/search")
 async def search(search_query: SearchQuery):
-    results = index.search(search_query.query)
-    return results
+    try:
+        # 添加 limit 参数以获取所有匹配结果
+        results = index.search(search_query.query, {
+            'limit': 1000,  # 设置一个较大的值以获取更多结果
+        })
+        # 添加命中数和总数信息
+        return {
+            "hits": results["hits"],
+            "nbHits": results["estimatedTotalHits"],  # 搜索命中数
+            "total": (await get_total_count())["total"]  # 总文档数
+        }
+    except Exception as e:
+        return {
+            "hits": [],
+            "nbHits": 0,
+            "total": 0,
+            "error": str(e)
+        }
 
 @app.get("/projects")
 async def get_projects():
@@ -55,8 +71,21 @@ async def get_projects():
 
 @app.get("/total_count")
 async def get_total_count():
-    stats = index.get_stats()
-    return {"total": stats["numberOfDocuments"]}
+    try:
+        # 获取索引统计信息
+        stats = index.get_stats()
+        print(f"Debug - Meilisearch stats: {stats}")  # 添加调试信息
+        return {"total": stats.number_of_documents}  # 使用属性访问而不是字典访问
+    except Exception as e:
+        print(f"Error getting total count: {str(e)}")  # 添加错误日志
+        try:
+            # 尝试使用另一种方式获取文档总数
+            documents = index.get_documents({'limit': 1})
+            total = documents['totalHits'] if 'totalHits' in documents else 0
+            return {"total": total}
+        except Exception as e2:
+            print(f"Second attempt failed: {str(e2)}")
+            return {"total": 0}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)

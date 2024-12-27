@@ -8,3 +8,12 @@ Prompt:
 [说明]
 1. 目录结构如下：automation_code/project_name/case/test_xxx.py, 每个py文件，都有一个测试类名，类注释为项目描述；函数注释为用例描述。
 # pytest-search-ui
+
+
+{
+"测试功能": ['reboot card', 'reboot device', 'upgrade card', "upgrade", "power", "gain", "tilt", "ntp", "log", "memory"， “...”],
+"平台": ["o2", "osp", "sonic"],
+"光层/电层"：["_o", "_e", "_oe"]"，
+"板卡类型"：[‘oa’, 'edfa', 'pa', 'ba', 'olp', 'olm', 'ocm', 'wss', 'oxc', '...'], 
+"客户": ['ali', 'baidu', 'general', 'ks', ‘...’], 
+}

@@ -265,6 +265,35 @@
             width: 600px;
             overflow-x: auto;
         }
+
+        .keyword-groups {
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .keyword-group {
+            margin-bottom: 8px;
+        }
+        
+        .group-label {
+            margin-right: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .keyword-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .keyword-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 
@@ -279,11 +308,22 @@
             </div>
         </div>
         <div class="search-container">
-            <input v-model="searchQuery" @input="debouncedSearch" placeholder="eg : ali reboot" class="search-input">
-            <!-- <button class="search-button" @click="performSearch">
-                <i class="el-icon-search search-icon"></i>
-            </button> -->
+            <input v-model="searchQuery" @input="debouncedSearch" placeholder="任意英文关键词 eg : ali reboot" class="search-input">
         </div>
+
+        <!-- 添加关键词标签组 -->
+        <div class="keyword-groups">
+            <div v-for="(keywords, group) in keywordGroups" :key="group" class="keyword-group">
+                <span class="group-label">{{group}}:</span>
+                <span v-for="keyword in keywords" 
+                      :key="keyword" 
+                      class="keyword-tag"
+                      @click="addKeyword(keyword)">
+                    {{keyword}}
+                </span>
+            </div>
+        </div>
+
         <!-- <div class="feature-icons">
             <div class="feature-icon">
                 <i class="el-icon-picture-outline"></i>
@@ -314,7 +354,11 @@
                 <div>Toldnoarm</div>
             </div>
         </div> -->
-        <el-table :data="searchResults" style="width: 100%;" v-if="searchResults.length > 0">
+        <div class="search-stats" v-if="searchResults && searchResults.nbHits !== undefined" style="margin-bottom: 20px; text-align: right; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+            搜索中: {{ searchResults.nbHits }} 条结果
+            (用例总数: {{ searchResults.total }})
+        </div>
+        <el-table :data="searchResults.hits" style="width: 100%;" v-if="searchResults.hits && searchResults.hits.length > 0">
             <el-table-column prop="project_name" label="项目名称">
                 <template #default="scope">
                     <el-tooltip :content="scope.row.project_description" placement="top" effect="dark">
@@ -415,10 +459,19 @@
                         const response = await axios.post('http://localhost:8001/search', {
                             query: searchQuery.value
                         });
-                        searchResults.value = response.data.hits;
+                        searchResults.value = {
+                            hits: response.data.hits,
+                            nbHits: response.data.nbHits,
+                            total: response.data.total
+                        };
                     } catch (error) {
                         console.error('搜索出错:', error);
                         ElementPlus.ElMessage.error('搜索失败，请稍后重试');
+                        searchResults.value = {
+                            hits: [],
+                            nbHits: 0,
+                            total: 0
+                        };
                     }
                 };
 
@@ -464,6 +517,23 @@
                     }
                 };
 
+                const keywordGroups = ref({
+                    '测试功能': ['reboot card', 'reboot device', 'upgrade card', 'upgrade', 'power', 'gain', 'tilt', 'ntp', 'log', 'memory'],
+                    '平台': ['o2', 'osp', 'sonic'],
+                    '光层/电层': ['_o', '_e', '_oe'],
+                    '板卡类型': ['oa', 'edfa', 'pa', 'ba', 'olp', 'olm', 'ocm', 'wss', 'oxc'],
+                    '客户': ['ali', 'baidu', 'general', 'ks']
+                });
+
+                const addKeyword = (keyword) => {
+                    if (searchQuery.value) {
+                        searchQuery.value = searchQuery.value.trim() + ' ' + keyword;
+                    } else {
+                        searchQuery.value = keyword;
+                    }
+                    debouncedSearch();
+                };
+
                 onMounted(() => {
                     fetchTotalCount();
                 });
@@ -482,7 +552,9 @@
                     openApplyDialog,
                     handleClose,
                     copyApplyText,
-                    totalCount
+                    totalCount,
+                    keywordGroups,
+                    addKeyword
                 };
             }
         });

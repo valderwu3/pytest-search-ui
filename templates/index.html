@@ -294,6 +294,22 @@
         .keyword-tag:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slogan {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            letter-spacing: 1px;
+            border-left: 2px solid rgba(255, 255, 255, 0.3);
+            padding-left: 15px;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
     </style>
 </head>
 
@@ -301,7 +317,10 @@
     {% raw %}
     <div id="app">
         <div class="header">
-            <div class="logo">🔍 TestSearch</div>
+            <div class="logo-container">
+                <div class="logo">🔍 TestSearch</div>
+                <div class="slogan">自动化测试用例搜索共享系统 · 共享创造价值</div>
+            </div>
             <div class="user-info">
                 <!-- <img src="/api/placeholder/40/40" alt="User Avatar" class="user-avatar">
                 <span>用户名</span> -->

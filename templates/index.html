@@ -389,16 +389,26 @@
     {% endraw %}
 
     <script>
-        const { createApp, ref } = Vue;
+        const { createApp, ref, onMounted } = Vue;
         const app = createApp({
             setup() {
                 const searchQuery = ref('');
                 const searchResults = ref([]);
+                const totalCount = ref(0);
                 const dialogVisible = ref(false);
                 const selectedProject = ref('');
                 const selectedCase = ref('');
                 const applyProject = ref('');
                 const projectBackground = ref('');
+
+                const fetchTotalCount = async () => {
+                    try {
+                        const response = await axios.get('http://localhost:8001/total_count');
+                        totalCount.value = response.data.total;
+                    } catch (error) {
+                        console.error('获取总数据量失败:', error);
+                    }
+                };
 
                 const performSearch = async () => {
                     try {
@@ -454,6 +464,10 @@
                     }
                 };
 
+                onMounted(() => {
+                    fetchTotalCount();
+                });
+
                 return {
                     searchQuery,
                     searchResults,
@@ -467,7 +481,8 @@
                     projectBackground,
                     openApplyDialog,
                     handleClose,
-                    copyApplyText
+                    copyApplyText,
+                    totalCount
                 };
             }
         });

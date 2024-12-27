@@ -53,5 +53,10 @@ async def get_projects():
     project_names = list(set(doc['project_name'] for doc in documents['results'] if 'project_name' in doc))
     return {"projects": project_names}
 
+@app.get("/total_count")
+async def get_total_count():
+    stats = index.get_stats()
+    return {"total": stats["numberOfDocuments"]}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
